@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f3ef" />
+    <title>Draft Tide — Version history for your designs</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --canvas: #f4f3ef;
+        --surface: #fff;
+        --raised: #fbfaf8;
+        --sunken: #ecebe6;
+        --line: #e1ded6;
+        --line-strong: #c9c4b9;
+        --ink: #1c2226;
+        --ink-2: #4c555b;
+        --ink-3: #70797f;
+        --tide-50: #eef6f6;
+        --tide-100: #d9ecec;
+        --tide-200: #b1d6d8;
+        --tide-400: #4d9aa2;
+        --tide-500: #2b7f88;
+        --tide-600: #1e6a73;
+        --tide-700: #16555d;
+        --tide-900: #0c3136;
+        --ok: #2d7449;
+        --ok-soft: #e4f1e8;
+        --warn: #8a560b;
+        --warn-soft: #fbf1dd;
+        --warn-line: #ecd3a2;
+        --danger: #a53c2a;
+        --danger-soft: #f8e6e1;
+        --danger-line: #ebbdb2;
+        --agent: #5a4b9e;
+        --agent-soft: #eceaf7;
+        --font-sans: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+        --r-xs: 4px;
+        --r-sm: 6px;
+        --r-md: 8px;
+        --r-lg: 12px;
+        --r-xl: 16px;
+        --shadow-card: 0 1px 2px rgb(28 34 38 / .05), 0 1px 1px rgb(28 34 38 / .03);
+        --shadow-raised: 0 10px 28px -12px rgb(28 34 38 / .22), 0 2px 6px rgb(28 34 38 / .06);
+        --shadow-dialog: 0 28px 70px -20px rgb(12 49 54 / .3), 0 4px 12px rgb(12 49 54 / .08);
+        --page-x: 32px;
+        --header-height: 56px;
+      }
+      * { box-sizing: border-box; }
+      html, body, #app { min-height: 100%; margin: 0; }
+      body { background: var(--canvas); color: var(--ink); font: 14px/1.55 var(--font-sans); -webkit-font-smoothing: antialiased; }
+      button, input, select, textarea { font: inherit; }
+      button { color: inherit; }
+      button:not(:disabled) { cursor: pointer; }
+      button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+        outline: 2px solid var(--tide-500); outline-offset: 2px;
+      }
+      ::selection { background: var(--tide-100); }
+      .app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+      .topbar { position: sticky; z-index: 5; top: 0; display: flex; align-items: center; gap: 24px; height: var(--header-height); padding: 0 20px; border-bottom: 1px solid var(--line); background: var(--surface); }
+      .brand { display: inline-flex; align-items: center; gap: 9px; padding: 4px 8px 4px 0; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--ink); font-size: 15px; font-weight: 650; letter-spacing: -.025em; white-space: nowrap; }
+      .brand-mark { width: 24px; height: 24px; flex: none; }
+      .nav { display: flex; align-items: center; gap: 4px; }
+      .nav-button, .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 7px 11px; border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--ink-2); font-size: 13px; font-weight: 500; line-height: 1.25; text-decoration: none; transition: background-color 160ms ease-out, border-color 160ms ease-out, box-shadow 160ms ease-out, color 160ms ease-out; }
+      .nav-button:hover, .button-ghost:hover { background: var(--sunken); color: var(--ink); }
+      .nav-button[aria-current="page"] { background: var(--sunken); color: var(--ink); }
+      .button { border-color: var(--line-strong); background: var(--surface); color: var(--ink); box-shadow: 0 1px 1px rgb(28 34 38 / .03); }
+      .button:hover:not(:disabled) { border-color: var(--tide-400); background: var(--raised); box-shadow: var(--shadow-card); }
+      .button-primary { border-color: var(--tide-700); background: var(--tide-700); color: #fff; box-shadow: none; }
+      .button-primary:hover:not(:disabled) { border-color: var(--tide-900); background: var(--tide-900); color: #fff; }
+      .button-secondary { border-color: var(--tide-200); background: var(--tide-50); color: var(--tide-700); }
+      .button-secondary:hover:not(:disabled) { border-color: var(--tide-400); background: var(--tide-100); color: var(--tide-700); }
+      .button-ghost { border-color: transparent; background: transparent; box-shadow: none; }
+      .button-danger { border-color: var(--danger); background: var(--danger); color: white; }
+      .button-danger:hover:not(:disabled) { border-color: #842c1e; background: #842c1e; color: white; }
+      .button-sm { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+      .button-lg { min-height: 40px; padding: 9px 14px; }
+      .button:disabled { cursor: not-allowed; opacity: .52; }
+      .button svg, .nav-button svg { width: 16px; height: 16px; flex: none; }
+      .connection { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; color: var(--ink-3); font-size: 12px; white-space: nowrap; }
+      .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tide-500); box-shadow: 0 0 0 3px var(--tide-50); }
+      .main { flex: 1; min-height: 0; }
+      .page { width: min(100%, 1160px); margin: 0 auto; padding: 24px var(--page-x) 80px; }
+      .page-home { width: min(100%, 984px); padding-top: 48px; }
+      .page-narrow { width: min(100%, 824px); padding-top: 40px; }
+      .stack { display: flex; flex-direction: column; gap: 24px; }
+      .stack-lg { gap: 40px; }
+      .row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+      .row-top { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+      .row-between { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      .cluster { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+      .fill { flex: 1; min-width: 0; }
+      .muted { color: var(--ink-2); }
+      .subtle { color: var(--ink-3); }
+      .mono { font-family: var(--font-mono); }
+      .small { font-size: 12px; }
+      .meta { color: var(--ink-3); font-size: 12px; }
+      .body-copy { color: var(--ink-2); font-size: 14px; }
+      h1, h2, h3, p { margin: 0; }
+      h1 { font-size: 22px; line-height: 1.35; font-weight: 650; letter-spacing: -.025em; }
+      h2 { font-size: 17px; line-height: 1.4; font-weight: 650; letter-spacing: -.015em; }
+      h3 { font-size: 15px; line-height: 1.4; font-weight: 650; }
+      .hero { display: flex; align-items: center; gap: 16px; }
+      .hero .brand-mark { width: 56px; height: 56px; }
+      .hero h1 { font-size: 28px; }
+      .hero p { margin-top: 2px; color: var(--ink-2); }
+      .hero .tagline-en { color: var(--ink-3); }
+      .section { display: flex; flex-direction: column; gap: 12px; }
+      .section-label { color: var(--ink-3); font-size: 13px; font-weight: 550; }
+      .grid-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      .card { min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+      .card-pad { padding: 20px; }
+      .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px 20px 0; }
+      .card-body { padding: 16px 20px 20px; }
+      .action-card { display: flex; min-height: 178px; flex-direction: column; align-items: stretch; gap: 14px; padding: 20px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-card); text-align: left; transition: border-color 160ms ease-out, box-shadow 160ms ease-out, transform 160ms ease-out; }
+      .action-card:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--tide-400); box-shadow: var(--shadow-raised); }
+      .action-card:disabled { cursor: not-allowed; color: var(--ink-3); opacity: .72; }
+      .action-icon { display: grid; width: 38px; height: 38px; place-items: center; border-radius: var(--r-sm); background: var(--tide-50); color: var(--tide-600); }
+      .action-icon svg { width: 20px; height: 20px; }
+      .action-card p { margin-top: 5px; color: var(--ink-2); font-size: 13px; }
+      .action-card .tag { align-self: flex-end; margin-top: auto; }
+      .badge { display: inline-flex; align-items: center; gap: 5px; min-height: 22px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; background: var(--raised); color: var(--ink-2); font-size: 11px; font-weight: 550; white-space: nowrap; }
+      .badge-ok { border-color: #c6dfce; background: var(--ok-soft); color: var(--ok); }
+      .badge-warn { border-color: var(--warn-line); background: var(--warn-soft); color: var(--warn); }
+      .badge-danger { border-color: var(--danger-line); background: var(--danger-soft); color: var(--danger); }
+      .badge-tide { border-color: var(--tide-200); background: var(--tide-50); color: var(--tide-700); }
+      .badge-agent { border-color: #d5d0ed; background: var(--agent-soft); color: var(--agent); }
+      .project-list { overflow: hidden; }
+      .project-row { display: flex; width: 100%; align-items: center; gap: 14px; padding: 15px 18px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); text-align: left; }
+      .project-row:last-child { border-bottom: 0; }
+      .project-row:hover { background: var(--raised); }
+      .folder-icon { width: 20px; height: 20px; flex: none; color: var(--tide-600); }
+      .project-row-name { display: block; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+      .project-row-path { display: block; overflow: hidden; color: var(--ink-3); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+      .empty-state { padding: 32px 20px; text-align: center; }
+      .empty-state p + p { margin-top: 4px; color: var(--ink-3); font-size: 13px; }
+      .page-title { display: flex; align-items: center; gap: 12px; }
+      .page-title-copy { min-width: 0; }
+      .page-title-copy p { margin-top: 2px; color: var(--ink-2); font-size: 13px; }
+      .project-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: stretch; min-height: calc(100vh - var(--header-height)); }
+      .project-main { min-width: 0; padding: 24px var(--page-x) 80px; }
+      .project-aside { display: flex; min-width: 0; flex-direction: column; gap: 16px; padding: 24px 20px 40px; border-left: 1px solid var(--line); background: var(--surface); }
+      .project-aside h2 { margin-top: 3px; font-size: 18px; overflow-wrap: anywhere; }
+      .status-card { display: flex; flex-direction: column; gap: 14px; padding: 16px 18px; border: 1px solid var(--warn-line); border-radius: var(--r-lg); background: rgb(251 241 221 / .45); }
+      .status-card h3 { font-size: 14px; }
+      .status-stat { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+      .status-stat strong { display: block; font-size: 18px; font-weight: 650; }
+      .status-stat span { display: block; margin-top: 1px; color: var(--ink-3); font-size: 11px; }
+      .history-list { overflow: hidden; }
+      .history-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 15px; border: 0; border-bottom: 1px solid var(--line); background: var(--surface); text-align: left; }
+      .history-row:last-child { border-bottom: 0; }
+      .history-row:hover { background: var(--raised); }
+      .history-row[aria-current="true"] { background: var(--tide-50); box-shadow: inset 3px 0 var(--tide-500); }
+      .history-dot { width: 10px; height: 10px; flex: none; border: 2px solid var(--tide-500); border-radius: 50%; background: var(--surface); }
+      .history-row[aria-current="true"] .history-dot { background: var(--tide-500); }
+      .history-title { display: block; overflow: hidden; color: var(--ink); font-weight: 550; text-overflow: ellipsis; white-space: nowrap; }
+      .history-meta { display: block; margin-top: 2px; color: var(--ink-3); font-size: 12px; }
+      .history-hash { color: var(--ink-3); font: 11px var(--font-mono); }
+      .demo-preview { overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-md); background: white; }
+      .preview-browser { display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--raised); }
+      .preview-browser i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-strong); }
+      .preview-address { width: 40%; height: 10px; margin-left: 8px; border-radius: 99px; background: var(--sunken); }
+      .preview-site { min-height: 150px; padding: 12px; background: #f8faf9; }
+      .preview-site-nav { display: flex; align-items: center; justify-content: space-between; color: #345052; font-size: 7px; }
+      .preview-site-logo { font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+      .preview-site-links { display: flex; gap: 8px; }
+      .preview-site-hero { display: grid; grid-template-columns: 1.1fr .9fr; align-items: center; gap: 8px; padding: 22px 4px 12px; }
+      .preview-site-kicker { color: #52777a; font-size: 6px; letter-spacing: .1em; text-transform: uppercase; }
+      .preview-site h3 { margin-top: 5px; color: #17383a; font-family: Georgia, serif; font-size: 17px; line-height: 1.05; }
+      .preview-site-copy { margin-top: 5px; color: #5e7071; font-size: 6px; }
+      .preview-site-cta { display: inline-block; margin-top: 8px; padding: 4px 7px; border-radius: 3px; background: #255d61; color: white; font-size: 6px; }
+      .preview-art { display: flex; min-height: 72px; align-items: center; justify-content: center; border-radius: 3px; background: #d6e1dc; }
+      .preview-art span { width: 38px; height: 48px; border-radius: 50% 50% 4px 4px; background: #87aaa4; }
+      .preview-label { color: var(--ink-3); font-size: 11px; }
+      .detail-actions { display: flex; flex-direction: column; gap: 8px; }
+      .detail-list { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 6px 10px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12px; }
+      .detail-list dt { color: var(--ink-3); }
+      .detail-list dd { min-width: 0; margin: 0; color: var(--ink-2); overflow-wrap: anywhere; }
+      .callout { padding: 10px 12px; border-radius: var(--r-sm); background: var(--raised); color: var(--ink-2); font-size: 12px; }
+      .callout-agent { background: var(--agent-soft); }
+      .callout-ok { background: var(--ok-soft); color: var(--ok); }
+      .callout-warn { background: var(--warn-soft); }
+      .sync-card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-card); }
+      .sync-card .card-head { padding-bottom: 0; }
+      .sync-meta { margin-top: 4px; color: var(--ink-2); font-size: 13px; }
+      .sync-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+      .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; }
+      .field { display: flex; flex-direction: column; gap: 6px; }
+      .field label { color: var(--ink); font-size: 13px; font-weight: 550; }
+      .field-help { color: var(--ink-3); font-size: 12px; }
+      .input, .select, .textarea { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--surface); color: var(--ink); }
+      .textarea { min-height: 82px; resize: vertical; }
+      .file-list { list-style: none; padding: 0; margin: 0; }
+      .file-list li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+      .file-list li:last-child { border-bottom: 0; }
+      .file-list input { width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--tide-600); }
+      .file-path { font: 12px/1.45 var(--font-mono); overflow-wrap: anywhere; }
+      .file-state { margin-left: auto; white-space: nowrap; }
+      .compare-controls { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: 12px; padding: 16px; }
+      .compare-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+      .compare-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+      .diff-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+      .diff-row:last-child { border-bottom: 0; }
+      .diff-code { font: 12px var(--font-mono); color: var(--ink-3); }
+      .diff-plus { color: var(--ok); font-weight: 700; }
+      .diff-minus { color: var(--danger); font-weight: 700; }
+      .diff-lines { overflow: auto; padding: 12px; border: 1px solid var(--line); border-radius: var(--r-md); background: #f8f8f6; color: var(--ink-2); font: 11px/1.6 var(--font-mono); }
+      .diff-lines div { white-space: pre; }
+      .diff-lines .add { background: #e6f2e9; color: #225b39; }
+      .diff-lines .del { background: #f8e9e5; color: #8d3425; }
+      .account-card .card-body { display: flex; flex-direction: column; gap: 14px; }
+      .auth-code { display: inline-block; padding: 7px 12px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); background: var(--raised); font: 23px var(--font-mono); letter-spacing: .16em; }
+      .sync-project-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .sync-project-row:last-child { border-bottom: 0; }
+      .settings-list { display: flex; flex-direction: column; }
+      .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+      .settings-row:last-child { border-bottom: 0; }
+      .settings-row p { margin-top: 2px; color: var(--ink-3); font-size: 12px; }
+      .toggle { position: relative; width: 42px; height: 24px; flex: none; padding: 2px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--sunken); transition: background-color 160ms ease-out, border-color 160ms ease-out; }
+      .toggle::after { content: ""; display: block; width: 18px; height: 18px; border-radius: 50%; background: white; box-shadow: 0 1px 3px rgb(0 0 0 / .2); transition: transform 160ms ease-out; }
+      .toggle[aria-pressed="true"] { border-color: var(--tide-700); background: var(--tide-700); }
+      .toggle[aria-pressed="true"]::after { transform: translateX(18px); }
+      .snippet { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--raised); }
+      .snippet code { min-width: 0; flex: 1; overflow-wrap: anywhere; color: var(--ink-2); font: 11px/1.55 var(--font-mono); }
+      .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+      .notice { display: flex; align-items: flex-start; gap: 9px; padding: 11px 13px; border: 1px solid var(--warn-line); border-radius: var(--r-sm); background: var(--warn-soft); color: var(--warn); font-size: 13px; }
+      .notice svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+      .toast { position: fixed; z-index: 30; right: 24px; bottom: 24px; max-width: min(420px, calc(100vw - 32px)); padding: 12px 16px; border: 1px solid var(--tide-200); border-radius: var(--r-md); background: var(--tide-900); color: white; box-shadow: var(--shadow-raised); animation: rise 180ms ease-out; }
+      .overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(20 28 31 / .36); animation: fade 140ms ease-out; }
+      .dialog { width: min(100%, 520px); max-height: min(88vh, 780px); overflow: auto; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); box-shadow: var(--shadow-dialog); animation: rise 180ms ease-out; }
+      .dialog-wide { width: min(100%, 640px); }
+      .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 20px 22px 0; }
+      .dialog-head h2 { font-size: 18px; }
+      .dialog-head p { margin-top: 5px; color: var(--ink-2); font-size: 13px; }
+      .icon-button { display: grid; width: 32px; height: 32px; flex: none; place-items: center; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--ink-3); }
+      .icon-button:hover { background: var(--sunken); color: var(--ink); }
+      .icon-button svg { width: 17px; height: 17px; }
+      .dialog-body { padding: 18px 22px 20px; }
+      .dialog-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 0 22px 20px; }
+      .repo-choice { display: flex; width: 100%; align-items: center; gap: 10px; padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); text-align: left; }
+      .repo-choice:hover { border-color: var(--tide-400); background: var(--raised); }
+      .toast + .toast { bottom: 82px; }
+      details { border-top: 1px solid var(--line); padding-top: 12px; }
+      summary { cursor: pointer; color: var(--ink-2); font-size: 13px; font-weight: 550; }
+      .divider { height: 1px; border: 0; background: var(--line); }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+      @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+      @media (max-width: 900px) {
+        :root { --page-x: 24px; }
+        .project-layout { grid-template-columns: minmax(0, 1fr) 300px; }
+        .project-aside { padding-inline: 16px; }
+        .grid-three { gap: 12px; }
+        .action-card { padding: 16px; }
+      }
+      @media (max-width: 700px) {
+        :root { --page-x: 18px; }
+        .topbar { gap: 10px; height: auto; min-height: var(--header-height); padding: 8px 14px; flex-wrap: wrap; }
+        .brand { font-size: 14px; }
+        .brand-mark { width: 22px; height: 22px; }
+        .nav { order: 3; width: 100%; overflow-x: auto; }
+        .nav-button { min-height: 34px; padding: 6px 9px; white-space: nowrap; }
+        .connection { font-size: 11px; }
+        .page-home, .page-narrow { padding-top: 28px; }
+        .grid-three { grid-template-columns: 1fr; }
+        .action-card { min-height: 130px; }
+        .project-layout { display: flex; flex-direction: column; }
+        .project-main { padding: 20px var(--page-x) 28px; }
+        .project-aside { border-top: 1px solid var(--line); border-left: 0; padding: 20px var(--page-x) 36px; }
+        .status-stat { gap: 8px; }
+        .history-hash { display: none; }
+        .form-grid { grid-template-columns: 1fr; }
+        .compare-controls { grid-template-columns: minmax(0, 1fr); }
+        .compare-grid { grid-template-columns: 1fr; }
+        .page-title { align-items: flex-start; }
+      }
+      @media (max-width: 420px) {
+        :root { --page-x: 14px; }
+        .topbar { padding-inline: 12px; }
+        .nav-button { gap: 6px; font-size: 12px; }
+        .connection { gap: 6px; }
+        .page { padding-bottom: 56px; }
+        .hero { align-items: flex-start; gap: 12px; }
+        .hero .brand-mark { width: 44px; height: 44px; }
+        .hero h1 { font-size: 24px; }
+        .project-row { gap: 10px; padding-inline: 12px; }
+        .history-row { gap: 9px; padding-inline: 11px; }
+        .history-row .badge { display: none; }
+        .dialog-foot { justify-content: stretch; }
+        .dialog-foot .button { flex: 1 1 auto; }
+        .settings-row { gap: 12px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      const icons = {
+        tide: '<svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M4 13.5c3.2-4 7.4-4 12.3 0 4.4 3.6 8.1 3.6 11.7-.1M4 19c3.2-4 7.4-4 12.3 0 4.4 3.6 8.1 3.6 11.7-.1M4 24.5c3.2-4 7.4-4 12.3 0 4.4 3.6 8.1 3.6 11.7-.1" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+        folder: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3.8 9h16.4" stroke="currentColor" stroke-width="1.7"/></svg>',
+        cloud: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7.2 18.5h10.2a4.1 4.1 0 0 0 .4-8.2A6 6 0 0 0 6.2 9a4.8 4.8 0 0 0 1 9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+        layers: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 8.5 4.4L12 12 3.5 7.4 12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m4 12 8 4.2 8-4.2M4 16.3l8 4.2 8-4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        gear: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 13.5 1.1.9-1.2 2.1-1.4-.5a7.7 7.7 0 0 1-1.4.8l-.3 1.5h-2.5l-.4-1.5a7 7 0 0 1-1.5-.8l-1.4.5-1.2-2.1 1.1-.9a6.3 6.3 0 0 1 0-1.7l-1.1-.9 1.2-2.1 1.4.5c.4-.3.9-.6 1.5-.8l.4-1.5h2.5l.3 1.5c.5.2 1 .5 1.4.8l1.4-.5 1.2 2.1-1.1.9a6.3 6.3 0 0 1 0 1.7Z" transform="translate(-1.2 -1.2)" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>',
+        back: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14.5 5-7 7 7 7M8 12h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        chevron: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        columns: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M12 5v14" stroke="currentColor" stroke-width="1.7"/></svg>',
+        save: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 4.5h12l2.5 2.5v12.5H4.5v-14a1 1 0 0 1 .5-1Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 4.8v5h8v-5M8 19v-6h8v6" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+        undo: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 8 4.5 12 9 16M5 12h8a6 6 0 0 1 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        refresh: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4.5 10a7.5 7.5 0 0 1 13-3L20 12M4 17v-5h5m10.5 2a7.5 7.5 0 0 1-13 3L4 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        plus: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        close: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        check: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.5 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        alert: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.8 21 20H3l9-16.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9v5m0 2.5v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+        copy: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M16 8V5a1.5 1.5 0 0 0-1.5-1.5h-9A1.5 1.5 0 0 0 4 5v10.5A1.5 1.5 0 0 0 5.5 17H8" stroke="currentColor" stroke-width="1.7"/></svg>',
+        branch: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="6" cy="5" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="18" r="2" stroke="currentColor" stroke-width="1.7"/><circle cx="6" cy="19" r="2" stroke="currentColor" stroke-width="1.7"/><path d="M6 7v10m12-1v-3a5 5 0 0 0-5-5H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+        spark: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 3 1.5 6.5L20 11l-6.5 1.5L12 19l-1.5-6.5L4 11l6.5-1.5L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>'
+      };
+      const icon = (name, cls = "") => icons[name].replace('<svg ', `<svg class="${cls}" `);
+      const versions = [
+        { id: "v5", label: "V5", title: "調整導覽與方案卡", date: "2026/10/03 14:28", author: "你", hash: "8f20b71", note: "收斂導覽層級，補上年繳方案切換。", files: 8 },
+        { id: "v4", label: "V4", title: "首頁內容與 CTA", date: "2026/10/02 17:42", author: "你", hash: "b1c9e42", note: "重排首頁資訊，讓主要行動更清楚。", files: 7 },
+        { id: "v3", label: "V3", title: "更新品牌色與字體", date: "2026/10/02 11:16", author: "你", hash: "453a8cc", note: "套用品牌色，修正標題與內文字級。", files: 6 },
+        { id: "v2", label: "V2", title: "加入產品介紹區塊", date: "2026/10/01 16:08", author: "你", hash: "0092fd1", note: "加入功能說明與使用情境。", files: 5 },
+        { id: "v1", label: "V1", title: "建立首頁草稿", date: "2026/10/01 09:35", author: "你", hash: "7ae13d0", note: "第一版首頁結構。", files: 4 }
+      ];
+      const state = {
+        view: "home", selectedVersion: "v5", compareFrom: "v3", compareTo: "v5",
+        dialog: null, toast: "", toastTimer: null, projectName: "品牌首頁改版",
+        versions: versions.slice(), agentAccess: false, signedIn: false,
+        remoteConnected: false, synced: false, lastScan: "剛才", recoveryState: "沒有待處理的操作"
+      };
+      const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch]);
+      const button = (label, action, variant = "", extra = "") => `<button type="button" class="button ${variant}" data-action="${action}" ${extra}>${label}</button>`;
+      const badge = (label, tone = "") => `<span class="badge ${tone}">${label}</span>`;
+      const currentVersion = () => state.versions.find((v) => v.id === state.selectedVersion) || state.versions[0];
+      const sectionName = () => state.view === "account" ? "account" : state.view === "settings" ? "settings" : "projects";
+      const topbar = () => `<header class="topbar">
+        <button type="button" class="brand" data-action="go" data-view="home" aria-label="Draft Tide：專案">${icon("tide")}<span>Draft Tide</span></button>
+        <nav class="nav" aria-label="主要導覽">
+          <button type="button" class="nav-button ${sectionName() === "projects" ? "" : ""}" aria-current="${sectionName() === "projects" ? "page" : "false"}" data-action="go" data-view="home">${icon("layers")}專案</button>
+          <button type="button" class="nav-button" aria-current="${sectionName() === "account" ? "page" : "false"}" data-action="go" data-view="account">${icon("cloud")}帳號與同步</button>
+          <button type="button" class="nav-button" aria-current="${sectionName() === "settings" ? "page" : "false"}" data-action="go" data-view="settings">${icon("gear")}設定與診斷</button>
+        </nav>
+        <span class="connection" role="status"><span class="connection-dot"></span>示範環境</span>
+      </header>`;
+      const pageTitle = (backLabel, backView, title, description = "") => `<div class="page-title">
+        <button type="button" class="button button-ghost button-sm" data-action="go" data-view="${backView}">${icon("back")}${backLabel}</button>
+        <div class="page-title-copy"><h1>${title}</h1>${description ? `<p>${description}</p>` : ""}</div>
+      </div>`;
+      const screenHome = () => `<div class="page page-home stack stack-lg">
+        <div class="hero">${icon("tide")}<div><h1>Draft Tide</h1><p>Version history for your designs · <span class="tagline-en">讓想法流動，讓每一稿留下。</span></p></div></div>
+        <section class="section" aria-labelledby="start-title"><h2 class="section-label" id="start-title">開始</h2>
+          <div class="grid-three">
+            <button type="button" class="action-card" data-action="start-local"><span class="action-icon">${icon("folder")}</span><span><strong>開啟設計資料夾</strong><p>選擇資料夾、確認保存範圍，建立第一個版本。</p></span></button>
+            <button type="button" class="action-card" disabled aria-disabled="true"><span class="row-between"><span class="action-icon">${icon("spark")}</span>${badge("尚未提供")}</span><span><strong>試用範例</strong><p>複製一份範例設計到你選的位置，跟著兩個步驟試用。</p></span></button>
+            <button type="button" class="action-card" data-action="open-github"><span class="action-icon">${icon("cloud")}</span><span><strong>從 GitHub 開啟</strong><p>把已同步的專案開到空白資料夾，完整保留歷史。</p></span></button>
+          </div>
+        </section>
+        <section class="section" aria-labelledby="projects-title"><h2 class="section-label" id="projects-title">專案</h2>
+          <div class="card project-list"><button type="button" class="project-row" data-action="open-project">
+            <span class="folder-icon">${icon("folder")}</span><span class="fill"><span class="project-row-name">${escapeHTML(state.projectName)}</span><span class="project-row-path">~/Designs/brand-home</span></span>
+            ${badge("示範專案", "badge-tide")}<span class="meta">剛才連接</span>${icon("chevron", "folder-icon")}
+          </button></div>
+        </section>
+      </div>`;
+      const screenReview = () => `<div class="page stack">
+        ${pageTitle("返回", "home", "確認保存範圍", "保存第一版之前，先確認哪些檔案會被保存。確認前不會改動資料夾裡的任何東西。")}
+        <div class="callout callout-agent">${icon("folder", "folder-icon")}<span>示範資料夾 · <code class="mono">~/Designs/brand-home</code></span></div>
+        <section class="card"><div class="card-head"><div><h2>專案資訊</h2><p class="sync-meta">為這個設計資料夾設定容易辨識的名稱。</p></div></div><div class="card-body form-grid">
+          <div class="field"><label for="project-name">專案名稱</label><input id="project-name" class="input" value="${escapeHTML(state.projectName)}" maxlength="60" /><span class="field-help">可以隨時在專案設定中變更。</span></div>
+          <div class="field"><label for="entry-file">預覽入口</label><select id="entry-file" class="select"><option>index.html</option><option>src/index.html</option><option>未設定</option></select><span class="field-help">用來產生版本歷史中的離線畫面預覽。</span></div>
+        </div></section>
+        <section class="card"><div class="card-head"><div><h2>保存範圍</h2><p class="sync-meta">選取要納入版本的檔案；暫存與相依套件不會列入。</p></div><button class="button button-ghost button-sm" data-action="scan-folder">${icon("refresh")}重新檢查</button></div>
+          <div class="card-body"><div class="row-between"><span class="meta" id="selected-count">已選取 4 個檔案</span>${badge("不會上傳至雲端")}</div>
+            <ul class="file-list">
+              <li><input type="checkbox" checked data-filecheck aria-label="納入 index.html" /><span class="file-path fill">index.html</span>${badge("納入", "badge-ok")}</li>
+              <li><input type="checkbox" checked data-filecheck aria-label="納入 styles.css" /><span class="file-path fill">styles.css</span>${badge("納入", "badge-ok")}</li>
+              <li><input type="checkbox" checked data-filecheck aria-label="納入 src/app.js" /><span class="file-path fill">src/app.js</span>${badge("納入", "badge-ok")}</li>
+              <li><input type="checkbox" checked data-filecheck aria-label="納入 assets/mark.svg" /><span class="file-path fill">assets/mark.svg</span>${badge("納入", "badge-ok")}</li>
+              <li><span class="file-path fill subtle">node_modules/ · .cache/</span>${badge("略過")}</li>
+            </ul>
+          </div>
+        </section>
+        <div class="row-between"><span class="meta">連接後會建立第一個本機版本。</span><div class="cluster">${button("取消", "go-home", "button-ghost")}${button("確認並連接", "confirm-folder", "button-primary button-lg", "id=\"confirm-folder\"")}</div></div>
+      </div>`;
+      const statusCard = () => `<section class="status-card" aria-label="資料夾狀態"><div class="row-between"><h3>資料夾狀態</h3>${badge("有未保存變更", "badge-warn")}</div><p class="small muted">自上次保存後有檔案更新；建立新版本後才能安全同步。</p><div class="status-stat"><div><strong>${state.versions.length}</strong><span>已保存版本</span></div><div><strong>4</strong><span>待保存檔案</span></div><div><strong>${state.remoteConnected ? "已連接" : "本機"}</strong><span>GitHub 狀態</span></div></div><div class="cluster">${button("重新檢查", "recheck", "button-ghost button-sm")}${button("保存版本", "open-save", "button-primary button-sm")}<span class="sr-only" role="status">${escapeHTML(state.lastScan)}</span></div></section>`;
+      const syncCard = () => `<section class="sync-card"><div class="card-head"><div><h2>GitHub 同步</h2><p class="sync-meta">${state.remoteConnected ? "draft-tide-demo/brand-home · main" : "這個專案只在這台電腦上，沒有異地備份。"}</p></div>${state.remoteConnected ? badge(state.synced ? "已同步" : "等待推送", state.synced ? "badge-ok" : "badge-warn") : ""}</div><div class="card-body">
+        ${state.remoteConnected ? `<p class="small muted">${state.synced ? "GitHub 上有這個專案的全部版本。" : "有 1 個 commit 等待推送。"}</p><div class="sync-actions">${button("立即推送", "sync-push", "button-sm")}${button("取得更新…", "sync-pull", "button-sm")}${button("檢查 GitHub", "sync-check", "button-ghost button-sm")}${button("停止同步", "sync-stop", "button-ghost button-sm")}</div>` : `<div class="cluster">${button(state.signedIn ? "連接 GitHub repo…" : "先登入 GitHub", state.signedIn ? "connect-repo" : "go-account", "button-primary button-sm")}<span class="meta">把歷史同步到你自己建立的 repo。</span></div>`}
+      </div></section>`;
+      const historyRows = () => `<div class="card history-list" role="list" aria-label="版本歷史">${state.versions.map((v, i) => `<button type="button" class="history-row" role="listitem" aria-current="${state.selectedVersion === v.id}" data-action="select-version" data-id="${v.id}"><span class="history-dot"></span><span class="fill"><span class="row" style="gap:8px"><span class="history-title">${escapeHTML(v.title)}</span>${i === 0 ? badge("最新", "badge-tide") : ""}</span><span class="history-meta">${v.label} · ${v.date} · ${v.author}</span></span><span class="history-hash">${v.hash}</span></button>`).join("")}</div>`;
+      const preview = (v, compact = false) => `<div class="demo-preview" aria-label="${escapeHTML(v.label)} 畫面預覽"><div class="preview-browser"><i></i><i></i><i></i><span class="preview-address"></span></div><div class="preview-site"><div class="preview-site-nav"><strong class="preview-site-logo">FIELDNOTE</strong><span class="preview-site-links"><span>故事</span><span>商品</span><span>關於</span></span></div><div class="preview-site-hero"><div><span class="preview-site-kicker">生活，留一點空白</span><h3>${v.id === "v1" ? "讓日常慢下來" : "為日常留一點餘白"}</h3><p class="preview-site-copy">從一件簡單的物件開始，重新整理每天的節奏。</p><span class="preview-site-cta">探索選品　→</span></div><div class="preview-art"><span></span></div></div></div></div>`;
+      const detailPanel = () => {
+        const v = currentVersion();
+        const index = state.versions.findIndex((item) => item.id === v.id);
+        const newer = state.versions[index - 1];
+        const older = state.versions[index + 1];
+        return `<aside class="project-aside" aria-label="版本詳細內容"><div><p class="meta" style="font-weight:650;letter-spacing:.04em">${v.label}</p><h2>${escapeHTML(v.title)}</h2><div class="cluster" style="margin-top:9px">${badge("Draft Tide", "badge-tide")}<time class="meta">${v.date}</time></div></div>
+          <section><p class="preview-label" style="margin-bottom:7px">畫面預覽 · 示範內容</p>${preview(v, true)}</section>
+          <p class="callout">${escapeHTML(v.note)} 這個版本的歷史會一直保留。</p>
+          <div class="detail-actions">${older ? button(`${icon("columns")}與上一筆比較`, "compare-older", "button-sm") : `<p class="meta" style="text-align:center">保存更多版本後即可比較。</p>`}${newer ? button(`${icon("columns")}與最新的一筆比較`, "compare-latest", "button-sm") : ""}${index > 0 ? button(`${icon("undo")}回復到此版`, "open-restore", "button-sm") : ""}</div>
+          <details><summary>詳細資訊</summary><dl class="detail-list"><dt>版本 ID</dt><dd class="mono">${v.id}-7ae13d0</dd><dt>建立方式</dt><dd>手動保存（示範）</dd><dt>Git commit</dt><dd class="mono">${v.hash}</dd><dt>作者</dt><dd>${v.author}</dd></dl><p class="meta" style="margin-top:8px">V 編號僅供顯示；永久引用使用版本 ID 或 Git commit。</p></details>
+        </aside>`;
+      };
+      const screenProject = () => `<div class="project-layout"><div class="project-main stack">
+          <div class="page-title"><button class="button button-ghost button-sm" data-action="go" data-view="home">${icon("back")}專案</button><div class="page-title-copy"><h1>${escapeHTML(state.projectName)}</h1><p class="row"><span>${icon("folder", "folder-icon")} ~/Designs/brand-home</span>${icon("branch", "folder-icon")} main</p></div></div>
+          ${statusCard()}${syncCard()}<section class="section"><div class="row-between"><div class="row" style="align-items:baseline"><h2>版本歷史</h2><span class="meta">${state.versions.length} 個版本 · 新的在前</span></div>${button(`${icon("columns")}比較版本`, "compare-latest", "button-sm")}</div>${historyRows()}<p class="meta">「外部變更」也會保留在歷史中。Draft Tide 不會改寫或刪除任何版本。</p></section>
+        </div>${detailPanel()}</div>`;
+      const screenCompare = () => {
+        const from = state.compareFrom, to = state.compareTo;
+        const a = state.versions.find((v) => v.id === from) || state.versions[state.versions.length - 1];
+        const b = state.versions.find((v) => v.id === to) || state.versions[0];
+        const same = from === to;
+        return `<div class="page stack"><div class="page-title"><button class="button button-ghost button-sm" data-action="go" data-view="project">${icon("back")}版本歷史</button><h1>比較版本</h1></div>
+          <section class="card compare-controls"><div class="field"><label for="compare-from">較早</label><select id="compare-from" class="select" data-change="compare-from">${state.versions.slice().reverse().map((v) => `<option value="${v.id}" ${v.id === from ? "selected" : ""}>${v.label} · ${escapeHTML(v.title)}</option>`).join("")}</select></div><button type="button" class="button button-ghost" data-action="swap-versions" aria-label="左右交換" title="左右交換" style="font-size:18px">⇄</button><div class="field"><label for="compare-to">較新</label><select id="compare-to" class="select" data-change="compare-to">${state.versions.slice().reverse().map((v) => `<option value="${v.id}" ${v.id === to ? "selected" : ""}>${v.label} · ${escapeHTML(v.title)}</option>`).join("")}</select></div></section>
+          ${same ? `<div class="card empty-state" role="status"><p>請選擇兩個不同的版本。</p></div>` : `<section class="section"><div class="compare-summary"><h2>畫面</h2><span class="meta">預覽頁面 · 示範內容</span><span class="meta fill"></span>${badge(`${a.label} → ${b.label}`, "badge-tide")}</div><div class="compare-grid"><div><p class="meta" style="margin-bottom:6px">較早 · ${a.label} · ${escapeHTML(a.title)}</p>${preview(a)}</div><div><p class="meta" style="margin-bottom:6px">較新 · ${b.label} · ${escapeHTML(b.title)}</p>${preview(b)}</div></div></section>
+          <section class="section"><div class="compare-summary"><h2>檔案變更</h2><span class="body-copy">有 2 個檔案變更</span><span class="fill"></span>${badge("手動保存", "badge-tide")}</div><div class="card"><div class="diff-row"><span class="diff-plus">＋</span><span class="file-path">index.html</span><span class="meta">+12 −5</span></div><div class="diff-row"><span class="diff-plus">±</span><span class="file-path">styles.css</span><span class="meta">+8 −3</span></div></div><p class="meta">文字檔可展開查看逐行差異（唯讀）；圖片可並排比較。這份 prototype 以示範差異呈現。</p><details><summary>查看 index.html 差異</summary><div class="diff-lines" style="margin-top:10px"><div>  &lt;main class="hero"&gt;</div><div class="del">−   &lt;h1&gt;讓日常慢下來&lt;/h1&gt;</div><div class="add">+   &lt;h1&gt;為日常留一點餘白&lt;/h1&gt;</div><div class="add">+   &lt;a class="button" href="#story"&gt;探索選品&lt;/a&gt;</div><div>  &lt;/main&gt;</div></div></details></section>`}
+        </div>`;
+      };
+      const screenAccount = () => `<div class="page page-narrow stack"><div><h1>帳號與同步</h1><p class="body-copy" style="margin-top:5px">登入 GitHub 是可略過的選項。略過或離線時，所有本機功能照常使用，保存不會等待網路。</p></div>
+        <section class="card account-card"><div class="card-head"><div><h2>${icon("cloud", "folder-icon")} GitHub 帳號</h2><p class="sync-meta">登入後，可以把專案同步到你自己在 GitHub 建立的 repo，並在其他資料夾或電腦開啟。</p></div>${state.signedIn ? badge("已登入", "badge-ok") : ""}</div><div class="card-body">${state.signedIn ? `<div class="row-between"><div><strong>demo-designer</strong><p class="meta">已透過 GitHub Device Flow 驗證（示範）</p></div>${button("登出", "logout", "button-ghost button-sm")}</div>` : `<p class="small muted">Draft Tide 只會取得已安裝 Draft Tide GitHub App 的 repo 讀寫權限，不會取得私人 email。</p><div>${button("登入 GitHub", "login", "button-primary")}</div>`}</div></section>
+        <section class="card"><div class="card-head"><div><h2>專案同步</h2><p class="sync-meta">管理專案的遠端備份狀態。本機保存不會等待網路。</p></div></div><div class="card-body"><div class="sync-project-row"><span class="folder-icon">${icon("folder")}</span><span class="fill"><strong>${escapeHTML(state.projectName)}</strong><span class="project-row-path">~/Designs/brand-home</span></span>${state.remoteConnected ? badge(state.synced ? "已同步" : "等待推送", state.synced ? "badge-ok" : "badge-warn") : badge("僅本機")}</div><div class="cluster" style="margin-top:12px">${state.remoteConnected ? button("管理同步", "go-project", "button-secondary button-sm") : button(state.signedIn ? "連接 GitHub repo…" : "先登入 GitHub", state.signedIn ? "connect-repo" : "login", "button-primary button-sm")}</div></div></section>
+        <p class="meta">登入資訊只保留在本機引擎中。你可以隨時停止單一專案的同步。</p></div>`;
+      const setupCard = () => `<section class="card"><div class="card-head"><div><h2>CLI / MCP / Skill 設定</h2><p class="sync-meta">給 agent 宿主的設定。只有開啟 agent 存取後，外部 agent 才能操作專案。</p></div></div><div class="card-body stack" style="gap:16px"><div><p class="small" style="font-weight:600;margin-bottom:3px">命令列工具</p><p class="meta" style="margin-bottom:7px">在後面接上子命令，例如 <code class="mono">--json project list</code>。</p><div class="snippet"><code>draft-tide --json project list</code>${button("複製", "copy-cli", "button-ghost button-sm")}</div></div><div><p class="small" style="font-weight:600;margin-bottom:3px">MCP server</p><p class="meta" style="margin-bottom:7px">貼到宿主的 MCP 設定；範例採用 Claude Code 常見格式。</p><div class="snippet"><code>{ "mcpServers": { "draft-tide": { "command": "draft-tide", "args": ["mcp", "serve"] } } }</code>${button("複製", "copy-mcp", "button-ghost button-sm")}</div></div><div><p class="small" style="font-weight:600;margin-bottom:3px">Skill</p><p class="meta" style="margin-bottom:7px">將 Skill 資料夾連結或複製到宿主的 skills 目錄。</p><div class="snippet"><code>~/.claude/skills/draft-tide</code>${button("複製路徑", "copy-skill", "button-ghost button-sm")}</div></div></div></section>`;
+      const screenSettings = () => `<div class="page page-narrow stack"><div><h1>設定與診斷</h1><p class="body-copy" style="margin-top:5px">agent 存取、待處理的請求、中斷的操作、引擎與畫面預覽。</p></div>
+        <section class="card"><div class="card-head"><div><h2>Agent 存取</h2><p class="sync-meta">允許本機 agent 透過 CLI 或 MCP 讀取及操作已連接的專案。</p></div>${badge(state.agentAccess ? "已開啟" : "已關閉", state.agentAccess ? "badge-ok" : "")}</div><div class="card-body settings-list"><div class="settings-row"><div><strong>允許 agent 存取</strong><p>${state.agentAccess ? "本機 agent 可以使用 Draft Tide 工具。" : "目前沒有 agent 可以操作專案。"}</p></div><button type="button" class="toggle" role="switch" aria-checked="${state.agentAccess}" aria-label="允許 agent 存取" data-action="toggle-agent"></button></div><p class="meta" style="padding-top:10px">只允許目前使用者的本機程序；登入 GitHub 與此設定無關。</p></div></section>
+        ${setupCard()}
+        <section class="card"><div class="card-head"><div><h2>待處理的請求</h2><p class="sync-meta">Agent 請求連接設計資料夾時，會在這裡等待你確認。</p></div>${badge("0 個")}</div><div class="card-body"><div class="empty-state" style="padding:16px"><p>目前沒有待處理的請求</p><p>連接資料夾前，你會先看到保存範圍。</p></div></div></section>
+        <section class="card"><div class="card-head"><div><h2>中斷的操作</h2><p class="sync-meta">未完成的保存、還原或同步會在這裡提供復原方式。</p></div>${badge("0 個", "badge-ok")}</div><div class="card-body"><div class="callout callout-ok">${icon("check", "folder-icon")} ${escapeHTML(state.recoveryState)}</div></div></section>
+        <section class="card"><div class="card-head"><div><h2>引擎狀態</h2><p class="sync-meta">保存、歷史與回復由這台電腦上的 Draft Tide 引擎處理。</p></div>${badge("示範環境", "badge-tide")}</div><div class="card-body"><dl class="detail-list" style="grid-template-columns:120px minmax(0,1fr);border-top:0;padding-top:0"><dt>應用程式版本</dt><dd>0.1.0 · 示範</dd><dt>執行環境</dt><dd>桌面版原型</dd><dt>預覽服務</dt><dd>離線示範</dd><dt>上次檢查</dt><dd>${escapeHTML(state.lastScan)}</dd></dl><div class="cluster" style="margin-top:14px">${button("重新檢查", "diagnostics", "button-sm")}${button("查看畫面預覽", "go-project", "button-ghost button-sm")}</div></div></section>
+        <section class="card"><div class="card-head"><div><h2>容量與診斷匯出</h2><p class="sync-meta">查看歷史與暫存用量，以及匯出去識別化的診斷資訊。</p></div>${badge("尚未提供")}</div></section>
+      </div>`;
+      const screen = () => ({ home: screenHome, review: screenReview, project: screenProject, compare: screenCompare, account: screenAccount, settings: screenSettings }[state.view] || screenHome)();
+      const modal = () => {
+        if (!state.dialog) return "";
+        const close = `<button type="button" class="icon-button" data-action="close-dialog" aria-label="關閉">${icon("close")}</button>`;
+        let title = "", description = "", content = "", actions = "", wide = "";
+        if (state.dialog === "save") {
+          title = "保存新版本"; description = "用一句話記下這次設計的變更。已保存的歷史不會被覆寫。";
+          content = `<form id="save-form"><div class="field"><label for="version-note">版本說明</label><input id="version-note" class="input" required maxlength="80" value="更新首頁設計" /><span class="field-help">例如：加入年繳切換、調整導覽層級</span></div></form>`;
+          actions = `${button("取消", "close-dialog", "button-ghost")}${button("保存版本", "submit-save", "button-primary", "form=\"save-form\"")}`;
+        } else if (state.dialog === "restore") {
+          const v = currentVersion(); title = `回復到 ${v.label}？`; description = `將資料夾內容回復成「${escapeHTML(v.title)}」保存時的狀態。`;
+          content = `<div class="notice">${icon("alert")}<span>回復前會先把目前未保存的內容保存為保護版本。之前的歷史不會刪除。此操作在 prototype 中只更新示範狀態。</span></div><div class="callout" style="margin-top:12px"><strong>目標版本</strong><br>${v.label} · ${escapeHTML(v.title)} · ${v.date}</div>`;
+          actions = `${button("取消", "close-dialog", "button-ghost")}${button("回復到此版", "confirm-restore", "button-primary")}`;
+        } else if (state.dialog === "github") {
+          title = "從 GitHub 開啟"; description = "選擇一個已同步的 repo，將專案開到本機空白資料夾。"; wide = "dialog-wide";
+          content = `<div class="stack" style="gap:8px"><button class="repo-choice" data-action="choose-repo"><span class="folder-icon">${icon("cloud")}</span><span class="fill"><strong>draft-tide-demo / brand-home</strong><span class="project-row-path">main · 最後更新 10 分鐘前</span></span>${badge("私有")}</button><button class="repo-choice" data-action="choose-repo"><span class="folder-icon">${icon("cloud")}</span><span class="fill"><strong>draft-tide-demo / landing-study</strong><span class="project-row-path">main · 最後更新昨天</span></span>${badge("私有")}</button><p class="meta" style="margin-top:6px">示範 repo 清單；prototype 不會連接 GitHub。</p></div>`;
+          actions = button("取消", "close-dialog", "button-ghost");
+        } else if (state.dialog === "login") {
+          title = "登入 GitHub"; description = "在瀏覽器開啟 GitHub 驗證頁面，輸入以下驗證碼並授權。";
+          content = `<div class="stack" style="gap:12px"><div class="row"><span class="auth-code">TIDE-0426</span>${button("複製驗證碼", "copy-code", "button-sm")}</div><div class="callout">已開啟裝置驗證流程（示範）。完成後，按下「我已完成授權」。</div><p class="meta">驗證碼約 15 分鐘後過期。這份 prototype 不會向 GitHub 傳送資料。</p></div>`;
+          actions = `${button("取消登入", "close-dialog", "button-ghost")}${button("我已完成授權", "finish-login", "button-primary")}`;
+        } else if (state.dialog === "stop-sync") {
+          title = "停止同步這個專案？"; description = "之後保存的版本不會再推送到 GitHub。";
+          content = `<p class="body-copy">這台電腦與 GitHub 上的內容都不會被刪除，資料夾的 Git 設定也會保持原樣。</p>`;
+          actions = `${button("取消", "close-dialog", "button-ghost")}${button("停止同步", "confirm-stop", "button-danger")}`;
+        } else if (state.dialog === "pull") {
+          title = "取得 GitHub 更新"; description = "先檢視計畫，再決定是否套用到本機。";
+          content = `<div class="callout callout-warn">GitHub 有 2 個新版本。預計新增 3 個檔案，不會刪除本機檔案。</div><ul class="file-list"><li><span class="file-path">index.html</span>${badge("更新", "badge-tide")}</li><li><span class="file-path">styles.css</span>${badge("更新", "badge-tide")}</li><li><span class="file-path">assets/cover.svg</span>${badge("新增", "badge-ok")}</li></ul>`;
+          actions = `${button("取消", "close-dialog", "button-ghost")}${button("套用更新", "apply-pull", "button-primary")}`;
+        } else if (state.dialog === "logout") {
+          title = "登出 GitHub？"; description = "本機版本仍可照常保存。"; content = `<p class="body-copy">等待中的遠端同步會暫停，重新登入後可繼續。</p>`;
+          actions = `${button("取消", "close-dialog", "button-ghost")}${button("登出", "confirm-logout", "button-primary")}`;
+        }
+        return `<div class="overlay" data-overlay><section class="dialog ${wide}" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div class="dialog-head"><div><h2 id="dialog-title">${title}</h2><p>${description}</p></div>${close}</div><div class="dialog-body">${content}</div><div class="dialog-foot">${actions}</div></section></div>`;
+      };
+      const render = () => {
+        document.getElementById("app").innerHTML = `<div class="app-shell">${topbar()}<main class="main">${screen()}</main>${state.toast ? `<div class="toast" role="status" aria-live="polite">${escapeHTML(state.toast)}</div>` : ""}${modal()}</div>`;
+        if (state.dialog) setTimeout(() => document.querySelector(".dialog .icon-button")?.focus(), 0);
+      };
+      const notify = (message) => { state.toast = message; clearTimeout(state.toastTimer); render(); state.toastTimer = setTimeout(() => { state.toast = ""; render(); }, 3000); };
+      const go = (view) => { state.view = view; state.dialog = null; state.toast = ""; render(); window.scrollTo({ top: 0, behavior: "smooth" }); };
+      const setRemote = () => { state.remoteConnected = true; state.synced = false; state.dialog = null; state.view = "project"; render(); notify("已連接示範 repo；歷史等待推送。"); };
+      document.addEventListener("click", (event) => {
+        const target = event.target.closest("[data-action]");
+        if (!target) { if (event.target.matches("[data-overlay]")) { state.dialog = null; render(); } return; }
+        const action = target.dataset.action;
+        if (action === "go") go(target.dataset.view);
+        else if (action === "go-home") go("home");
+        else if (action === "go-account") go("account");
+        else if (action === "go-project") go("project");
+        else if (action === "start-local") go("review");
+        else if (action === "open-project") go("project");
+        else if (action === "open-github") { state.dialog = "github"; render(); }
+        else if (action === "close-dialog") { state.dialog = null; render(); }
+        else if (action === "confirm-folder") {
+          const checked = [...document.querySelectorAll("[data-filecheck]")].filter((el) => el.checked).length;
+          if (!checked) { notify("至少選取一個要保存的檔案。"); return; }
+          state.projectName = document.getElementById("project-name")?.value.trim() || "未命名專案";
+          const v = { id: `v${Date.now()}`, label: "V1", title: "建立第一個版本", date: "剛才", author: "你", hash: "7ae13d0", note: `已納入 ${checked} 個檔案，建立第一個本機版本。`, files: checked };
+          state.versions = [v, ...state.versions]; state.selectedVersion = v.id; go("project"); notify("資料夾已連接，第一個版本已保存。");
+        } else if (action === "scan-folder") { state.lastScan = "剛才重新檢查"; notify("示範掃描完成；未改動任何檔案。"); }
+        else if (action === "select-version") { state.selectedVersion = target.dataset.id; render(); }
+        else if (action === "recheck") { state.lastScan = "剛才"; notify("資料夾狀態已更新。"); }
+        else if (action === "open-save") { state.dialog = "save"; render(); }
+        else if (action === "submit-save") { document.getElementById("save-form")?.requestSubmit(); }
+        else if (action === "compare-latest") { state.compareFrom = state.versions[Math.min(1, state.versions.length - 1)]?.id || "v4"; state.compareTo = state.versions[0]?.id || "v5"; go("compare"); }
+        else if (action === "compare-older") {
+          const index = state.versions.findIndex((v) => v.id === state.selectedVersion);
+          state.compareFrom = state.versions[index + 1]?.id || state.selectedVersion; state.compareTo = state.selectedVersion; go("compare");
+        }
+        else if (action === "swap-versions") { [state.compareFrom, state.compareTo] = [state.compareTo, state.compareFrom]; render(); }
+        else if (action === "open-restore") { state.dialog = "restore"; render(); }
+        else if (action === "confirm-restore") {
+          const old = currentVersion();
+          const v = { ...old, id: `v${Date.now()}`, label: `V${state.versions.length + 1}`, title: `回復到「${old.title}」`, date: "剛才", author: "你", hash: "c8421a6", note: `已建立保護版本，並將示範狀態回復到 ${old.label}。`, files: old.files };
+          state.versions = [v, ...state.versions]; state.selectedVersion = v.id; state.dialog = null; render(); notify("回復完成；新的歷史版本已建立，舊版本仍保留。");
+        }
+        else if (action === "sync-push") { state.synced = true; render(); notify("示範推送完成；遠端狀態已更新。"); }
+        else if (action === "sync-check") notify("已檢查示範 repo；沒有新的遠端變更。");
+        else if (action === "sync-pull") { state.dialog = "pull"; render(); }
+        else if (action === "apply-pull") { state.dialog = null; state.synced = false; render(); notify("示範更新已套用；本機版本歷史已保留。"); }
+        else if (action === "sync-stop") { state.dialog = "stop-sync"; render(); }
+        else if (action === "confirm-stop") { state.remoteConnected = false; state.synced = false; state.dialog = null; render(); notify("已停止示範同步；本機內容仍保留。"); }
+        else if (action === "connect-repo") { if (!state.signedIn) { state.view = "account"; state.dialog = "login"; render(); } else { state.dialog = "github"; render(); } }
+        else if (action === "choose-repo") setRemote();
+        else if (action === "login") { state.dialog = "login"; render(); }
+        else if (action === "finish-login") { state.signedIn = true; state.dialog = null; render(); notify("GitHub 登入完成（示範狀態）。"); }
+        else if (action === "logout") { state.dialog = "logout"; render(); }
+        else if (action === "confirm-logout") { state.signedIn = false; state.dialog = null; render(); notify("已登出示範帳號；本機功能仍可使用。"); }
+        else if (action === "toggle-agent") { state.agentAccess = !state.agentAccess; render(); notify(state.agentAccess ? "已在示範狀態開啟 Agent 存取。" : "已在示範狀態關閉 Agent 存取。"); }
+        else if (action.startsWith("copy-")) {
+          const values = { "copy-cli": "draft-tide --json project list", "copy-mcp": '{ "mcpServers": { "draft-tide": { "command": "draft-tide", "args": ["mcp", "serve"] } } }', "copy-skill": "~/.claude/skills/draft-tide", "copy-code": "TIDE-0426" };
+          const value = values[action];
+          if (navigator.clipboard && value) navigator.clipboard.writeText(value).then(() => notify("已複製到剪貼簿。"), () => notify("瀏覽器未提供剪貼簿權限。")); else notify(value ? `複製內容：${value}` : "");
+        }
+        else if (action === "diagnostics") { state.lastScan = "剛才"; notify("診斷資訊已更新（示範狀態）。"); }
+      });
+      document.addEventListener("submit", (event) => {
+        if (event.target.id === "save-form") {
+          event.preventDefault(); const title = document.getElementById("version-note").value.trim();
+          if (!title) return;
+          const v = { id: `v${Date.now()}`, label: `V${state.versions.length + 1}`, title, date: "剛才", author: "你", hash: "8d32f11", note: title, files: 8 };
+          state.versions = [v, ...state.versions]; state.selectedVersion = v.id; state.dialog = null; render(); notify("版本已保存到示範歷史。");
+        }
+      });
+      document.addEventListener("change", (event) => {
+        if (event.target.matches("[data-filecheck]")) {
+          const checked = [...document.querySelectorAll("[data-filecheck]")].filter((el) => el.checked).length;
+          document.getElementById("selected-count").textContent = `已選取 ${checked} 個檔案`;
+          document.getElementById("confirm-folder").disabled = checked === 0;
+        }
+        if (event.target.id === "compare-from") { state.compareFrom = event.target.value; render(); }
+        if (event.target.id === "compare-to") { state.compareTo = event.target.value; render(); }
+      });
+      document.addEventListener("keydown", (event) => { if (event.key === "Escape" && state.dialog) { state.dialog = null; render(); } });
+      render();
+    </script>
+  </body>
+</html>

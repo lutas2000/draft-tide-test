@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "projectId": "2c851bd2-7a02-486b-842a-ac1a3df56357",
+  "name": "draft-tide-design",
+  "entryFiles": [
+    "index.html"
+  ],
+  "excludeDirNames": [],
+  "excludeFilePatterns": []
+}
